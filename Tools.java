@@ -23,6 +23,9 @@ class Tools {
 
     Scanner scanner = new Scanner(System.in);
 
+    private Random random = new Random();
+    private String[] coordinates = { "B2", "B4", "D2", "D4" };
+
     private Ship ourShip01;
     private Ship ourShip02;
     private Ship ourShip03;
@@ -144,9 +147,6 @@ class Tools {
         grid[row][col] = String.valueOf(ship.getHp());
     }
 
-
-
-
     public void askOurAttackResult() {
         System.out.println("攻撃結果を入力してください。");
         System.err.println("0:ハズレ！ 1:波高し 2:命中 3:撃沈");
@@ -225,15 +225,14 @@ class Tools {
             if (newRow >= 0 && newRow < enemyValues.length && newCol >= 0 && newCol < enemyValues[0].length) {
                 if (IsSetNo) {
                     enemyValues[newRow][newCol] = gain;
-                } else  {
+                } else {
                     enemyValues[newRow][newCol] += gain;
                 }
             }
         }
     }
 
-
-    private void updateSurroundingCellsForEAP(int row, int col, boolean IsSetNo, int gain) {
+    private void updateSurroundingCellsForSetPoint(int row, int col, boolean IsSetNo, int gain) {
         int[] dx = { -1, 0, 1, 0, -1, -1, 1, 1 };
         int[] dy = { 0, -1, 0, 1, -1, 1, -1, 1 };
 
@@ -244,39 +243,21 @@ class Tools {
             if (newRow >= 0 && newRow < enemyValues.length && newCol >= 0 && newCol < enemyValues[0].length) {
                 if (IsSetNo) {
                     enableAttackPoints[newRow][newCol] = gain;
-                } else  {
+                } else {
                     enableAttackPoints[newRow][newCol] += gain;
                 }
             }
         }
     }
 
-
-    public String getMaxValuePoint() {
-        int maxVal = enemyValues[0][0];
-        int maxRow = 0;
-        int maxCol = 0;
-
-        for (int i = 0; i < enemyValues.length; i++) {
-            for (int j = 0; j < enemyValues[i].length; j++) {
-                if (enemyValues[i][j] > maxVal) {
-                    maxVal = enemyValues[i][j];
-                    maxRow = i;
-                    maxCol = j;
-                }
+    public void setEnableAttackPoints() {
+        // 一旦全部0にする
+        for (int i = 0; i < enableAttackPoints.length; i++) {
+            for (int j = 0; j < enableAttackPoints[i].length; j++) {
+                enableAttackPoints[i][j] = 0;
             }
         }
-
-        // 行のインデックスをアルファベットに変換
-        char rowChar = (char) ('A' + maxRow);
-        // 列のインデックスは1から始まるように調整
-        int colIndex = maxCol + 1;
-
-        // 結果を文字列で返す
-        return rowChar + Integer.toString(colIndex);
-    }
-
-    public void setEnableAttackPoint() {
+        // いるマスをに2を入れる
 
         int[] index = ABCto123(ourShip01);
         enableAttackPoints[index[0]][index[1]] = 2;
@@ -287,14 +268,16 @@ class Tools {
         index = ABCto123(ourShip04);
         enableAttackPoints[index[0]][index[1]] = 2;
 
-        for (int i = 0; i < enemyValues.length; i++) {
-            for (int j = 0; j < enemyValues[i].length; j++) {
-                if (enemyValues[i][j] == 0) {
-                    enableAttackPoints[i][j] = 1;
+        // その周りを1にする
+        for (int i = 0; i < enableAttackPoints.length; i++) {
+            for (int j = 0; j < enableAttackPoints[i].length; j++) {
+                if (enableAttackPoints[i][j] == 2) {
+                    updateSurroundingCellsForSetPoint(i, j, true, 1);
                 }
             }
-        }
 
+        }
+        // 2のマスを0にする
         index = ABCto123(ourShip01);
         enableAttackPoints[index[0]][index[1]] = 0;
         index = ABCto123(ourShip02);
@@ -303,17 +286,13 @@ class Tools {
         enableAttackPoints[index[0]][index[1]] = 0;
         index = ABCto123(ourShip04);
         enableAttackPoints[index[0]][index[1]] = 0;
-
-        System.err.println("攻撃可能な場所");
-        for (int i = 0; i < enemyValues.length; i++) {
-            for (int j = 0; j < enemyValues[i].length; j++) {
-                if (enemyValues[i][j] == 0) {
-                    System.out.print(enableAttackPoints[i][j]);
-                    System.err.print(" ");
-                }
-
+        // 表示する
+        System.err.println("攻撃可能なマス");
+        for (int i = 0; i < enableAttackPoints.length; i++) {
+            for (int j = 0; j < enableAttackPoints[i].length; j++) {
+                System.out.print(enableAttackPoints[i][j] + " ");
             }
-            System.err.println("");
+            System.out.println(); // 各行の末尾で改行
         }
 
     }
@@ -328,6 +307,61 @@ class Tools {
         int col = Integer.parseInt(position.substring(1)) - 1;
         return new int[] { row, col }; // 行と列のインデックスを返す
     }
+
+    public String maxEnableAttackValuePoint() {
+        int maxIndexlistCount = 25; // 探索する座標の数
+        int[][] fixEnemyValues = new int[enemyValues.length][enemyValues[0].length];
+
+        // enemyValuesの深いコピーを作成
+        for (int i = 0; i < enemyValues.length; i++) {
+            System.arraycopy(enemyValues[i], 0, fixEnemyValues[i], 0, enemyValues[i].length);
+        }
+
+        for (int h = 0; h < maxIndexlistCount; h++) {
+            int max = -1; // 最大値の初期化
+            int maxI = -1, maxJ = -1; // 最大値の座標を保存する変数
+
+            for (int i = 0; i < fixEnemyValues.length; i++) {
+                for (int j = 0; j < fixEnemyValues[i].length; j++) {
+                    if (fixEnemyValues[i][j] > max) {
+                        max = fixEnemyValues[i][j];
+                        maxI = i;
+                        maxJ = j;
+                    }
+                }
+            }
+
+            if (maxI != -1 && enableAttackPoints[maxI][maxJ] == 1) {
+                // 対応するenableAttackPointsが1の場合、座標を文字列で返す
+                return (char) (maxI + 'A') + String.valueOf(maxJ + 1);
+            }
+
+            // その座標の値をリセットして次の最大値を探す
+            if (maxI != -1) {
+                fixEnemyValues[maxI][maxJ] = 0;
+            }
+        }
+
+        return ""; // 適切な座標が見つからない場合は空文字列を返す
+
+        // int max = 0;
+        // int[] maxIndex = new int[2];
+        // for (int i = 0; i < enemyValues.length; i++) {
+        //     for (int j = 0; j < enemyValues[i].length; j++) {
+        //         if (enemyValues[i][j] > max) {
+        //             max = enemyValues[i][j];
+        //             maxIndex[0] = i;
+        //             maxIndex[1] = j;
+        //         }
+        //     }
+        // }
+        // return (char) (maxIndex[0] + 'A') + String.valueOf(maxIndex[1] + 1);
+    }
+    
+    public void randomSayAttackPoint() {
+        int randomIndex = random.nextInt(coordinates.length);
+        sayAttackPoint(coordinates[randomIndex]);
+    }
 }
 
 class Ship {
@@ -335,15 +369,11 @@ class Ship {
     private String position;
     private int hp;
 
-
-    public Ship( boolean isOurShip, String position, int hp) {
+    public Ship(boolean isOurShip, String position, int hp) {
         this.isOurShip = isOurShip;
         this.position = (isOurShip) ? position : "??";
         this.hp = hp;
-
     }
-
-
 
     public boolean isOurShip() {
         return isOurShip;
