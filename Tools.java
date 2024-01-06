@@ -93,7 +93,7 @@ class Tools {
     public boolean IsAllZero() {
         for (int i = 0; i < enemyValues.length; i++) {
             for (int j = 0; j < enemyValues[i].length; j++) {
-                if (enemyValues[i][j] != 0) {
+                if (enemyValues[i][j] != 0 && enemyValues[i][j] != -1) {
                     return false; // 0以外の要素が見つかったらfalseを返す
                 }
             }
