@@ -38,13 +38,9 @@ public class Main {
 
         ENDGAME: while (true) {
             System.out.println("ターン" + (turnCount + 1));
-            
-            
-            
+
             if (Tools.ourAttackTurn) {
                 System.out.println("我々の攻撃ターンです。");
-                
-                
 
                 algorithm.Think();
                 tools.askOurAttackResult();
@@ -75,7 +71,7 @@ public class Main {
 
             Tools.ourAttackTurn = !Tools.ourAttackTurn;
             turnCount++;
-            
+
         }
 
     }

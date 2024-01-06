@@ -1,5 +1,8 @@
 package my_code;
 
+import java.util.*;
+import java.io.*;
+
 class Algorithm01 {
     
     private static Algorithm01 instance;
@@ -28,6 +31,8 @@ class Algorithm01 {
 
         tools.enemyValuesViwe();
         tools.shipView();
+        tools.setEnableAttackPoint();
+
 
         // 自分たちの攻撃結果から敵の位置を推測
 
@@ -35,7 +40,10 @@ class Algorithm01 {
         if (tools.IsAllZero()) {
             tools.sayAttackPoint("B4");
         }
-        
+        // それ以外の場合は敵の位置を推測して攻撃
+        else {
+            tools.sayAttackPoint(tools.getMaxValuePoint());
+        }
 
     }
 }

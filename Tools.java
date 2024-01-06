@@ -17,6 +17,7 @@ class Tools {
 
     int[][] ourValues = new int[5][5];
     int[][] enemyValues = new int[5][5];
+    int[][] enableAttackPoints = new int[5][5];
 
     private static String lastOurAttackPoint;
 
@@ -36,6 +37,7 @@ class Tools {
             for (int j = 0; j < ourValues[i].length; j++) {
                 ourValues[i][j] = 0;
                 enemyValues[i][j] = 0;
+                enableAttackPoints[i][j] = 0;
             }
         }
 
@@ -142,6 +144,9 @@ class Tools {
         grid[row][col] = String.valueOf(ship.getHp());
     }
 
+
+
+
     public void askOurAttackResult() {
         System.out.println("攻撃結果を入力してください。");
         System.err.println("0:ハズレ！ 1:波高し 2:命中 3:撃沈");
@@ -220,13 +225,109 @@ class Tools {
             if (newRow >= 0 && newRow < enemyValues.length && newCol >= 0 && newCol < enemyValues[0].length) {
                 if (IsSetNo) {
                     enemyValues[newRow][newCol] = gain;
-                } else {
+                } else  {
                     enemyValues[newRow][newCol] += gain;
                 }
             }
         }
     }
 
+
+    private void updateSurroundingCellsForEAP(int row, int col, boolean IsSetNo, int gain) {
+        int[] dx = { -1, 0, 1, 0, -1, -1, 1, 1 };
+        int[] dy = { 0, -1, 0, 1, -1, 1, -1, 1 };
+
+        for (int i = 0; i < dx.length; i++) {
+            int newRow = row + dx[i];
+            int newCol = col + dy[i];
+
+            if (newRow >= 0 && newRow < enemyValues.length && newCol >= 0 && newCol < enemyValues[0].length) {
+                if (IsSetNo) {
+                    enableAttackPoints[newRow][newCol] = gain;
+                } else  {
+                    enableAttackPoints[newRow][newCol] += gain;
+                }
+            }
+        }
+    }
+
+
+    public String getMaxValuePoint() {
+        int maxVal = enemyValues[0][0];
+        int maxRow = 0;
+        int maxCol = 0;
+
+        for (int i = 0; i < enemyValues.length; i++) {
+            for (int j = 0; j < enemyValues[i].length; j++) {
+                if (enemyValues[i][j] > maxVal) {
+                    maxVal = enemyValues[i][j];
+                    maxRow = i;
+                    maxCol = j;
+                }
+            }
+        }
+
+        // 行のインデックスをアルファベットに変換
+        char rowChar = (char) ('A' + maxRow);
+        // 列のインデックスは1から始まるように調整
+        int colIndex = maxCol + 1;
+
+        // 結果を文字列で返す
+        return rowChar + Integer.toString(colIndex);
+    }
+
+    public void setEnableAttackPoint() {
+
+        int[] index = ABCto123(ourShip01);
+        enableAttackPoints[index[0]][index[1]] = 2;
+        index = ABCto123(ourShip02);
+        enableAttackPoints[index[0]][index[1]] = 2;
+        index = ABCto123(ourShip03);
+        enableAttackPoints[index[0]][index[1]] = 2;
+        index = ABCto123(ourShip04);
+        enableAttackPoints[index[0]][index[1]] = 2;
+
+        for (int i = 0; i < enemyValues.length; i++) {
+            for (int j = 0; j < enemyValues[i].length; j++) {
+                if (enemyValues[i][j] == 0) {
+                    enableAttackPoints[i][j] = 1;
+                }
+            }
+        }
+
+        index = ABCto123(ourShip01);
+        enableAttackPoints[index[0]][index[1]] = 0;
+        index = ABCto123(ourShip02);
+        enableAttackPoints[index[0]][index[1]] = 0;
+        index = ABCto123(ourShip03);
+        enableAttackPoints[index[0]][index[1]] = 0;
+        index = ABCto123(ourShip04);
+        enableAttackPoints[index[0]][index[1]] = 0;
+
+        System.err.println("攻撃可能な場所");
+        for (int i = 0; i < enemyValues.length; i++) {
+            for (int j = 0; j < enemyValues[i].length; j++) {
+                if (enemyValues[i][j] == 0) {
+                    System.out.print(enableAttackPoints[i][j]);
+                    System.err.print(" ");
+                }
+
+            }
+            System.err.println("");
+        }
+
+    }
+
+    public int[] ABCto123(Ship ship) {
+        if (!ship.isOurShip()) {
+            return null; // 無効な場合はnullを返す
+        }
+
+        String position = ship.getPosition();
+        int row = position.charAt(0) - 'A';
+        int col = Integer.parseInt(position.substring(1)) - 1;
+        return new int[] { row, col }; // 行と列のインデックスを返す
+    }
 }
 
 class Ship {
@@ -234,11 +335,15 @@ class Ship {
     private String position;
     private int hp;
 
-    public Ship(boolean isOurShip, String position, int hp) {
+
+    public Ship( boolean isOurShip, String position, int hp) {
         this.isOurShip = isOurShip;
         this.position = (isOurShip) ? position : "??";
         this.hp = hp;
+
     }
+
+
 
     public boolean isOurShip() {
         return isOurShip;
