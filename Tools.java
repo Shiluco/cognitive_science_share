@@ -25,15 +25,12 @@ class Tools {
 
     private Random random = new Random();
     private String[] coordinates = { "B2", "B4", "D2", "D4" };
+    EnemyShip enemyShip;
 
     private Ship ourShip01;
     private Ship ourShip02;
     private Ship ourShip03;
     private Ship ourShip04;
-    private Ship enemyShip01;
-    private Ship enemyShip02;
-    private Ship enemyShip03;
-    private Ship enemyShip04;
 
     Tools() {
         for (int i = 0; i < ourValues.length; i++) {
@@ -52,10 +49,8 @@ class Tools {
         ourShip03 = new Ship(true, "D5", 3);
         ourShip04 = new Ship(true, "E2", 3);
 
-        enemyShip01 = new Ship(false, "??", 3);
-        enemyShip02 = new Ship(false, "??", 3);
-        enemyShip03 = new Ship(false, "??", 3);
-        enemyShip04 = new Ship(false, "??", 3);
+        enemyShip = new EnemyShip(3, 12);
+
     }
     /// getterとsetter///
 
@@ -347,20 +342,25 @@ class Tools {
         // int max = 0;
         // int[] maxIndex = new int[2];
         // for (int i = 0; i < enemyValues.length; i++) {
-        //     for (int j = 0; j < enemyValues[i].length; j++) {
-        //         if (enemyValues[i][j] > max) {
-        //             max = enemyValues[i][j];
-        //             maxIndex[0] = i;
-        //             maxIndex[1] = j;
-        //         }
-        //     }
+        // for (int j = 0; j < enemyValues[i].length; j++) {
+        // if (enemyValues[i][j] > max) {
+        // max = enemyValues[i][j];
+        // maxIndex[0] = i;
+        // maxIndex[1] = j;
+        // }
+        // }
         // }
         // return (char) (maxIndex[0] + 'A') + String.valueOf(maxIndex[1] + 1);
     }
-    
+
     public void randomSayAttackPoint() {
         int randomIndex = random.nextInt(coordinates.length);
         sayAttackPoint(coordinates[randomIndex]);
+    }
+
+    public void printEnemyStatus() {
+        System.out.println("敵の数: " + enemyShip.getEnemyCount());
+        System.out.println("敵の総HP: " + enemyShip.getEnemySumHp());
     }
 }
 
@@ -400,4 +400,44 @@ class Ship {
     public void setHp(int hp) {
         this.hp = hp;
     }
+}
+
+class EnemyShip {
+    private int enemyCount; // 敵の数
+    private int enemySumHp; // 敵の総HP
+
+    public EnemyShip(int enemyCount, int enemySumHp) {
+        this.enemyCount = enemyCount;
+        this.enemySumHp = enemySumHp;
+    }
+
+    public int getEnemyCount() {
+        return enemyCount;
+    }
+
+    public int getEnemySumHp() {
+        return enemySumHp;
+    }
+
+    public void setEnemyCount(int enemyCount) {
+        this.enemyCount = enemyCount;
+    }
+
+    public void setEnemySumHp(int enemySumHp) {
+        this.enemySumHp = enemySumHp;
+    }
+
+    public void damageEnemy(int damage) {
+        this.enemySumHp -= damage;
+        if (this.enemySumHp < 0) {
+            this.enemySumHp = 0;
+        }
+    }
+
+    public void decreaseEnemyCount() {
+        if (this.enemyCount > 0) {
+            this.enemyCount--;
+        }
+    }
+
 }

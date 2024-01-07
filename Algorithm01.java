@@ -29,6 +29,7 @@ class Algorithm01 {
         tools.enemyValuesViwe();
         tools.shipView();
         tools.setEnableAttackPoints();
+        tools.printEnemyStatus();
 
         // 自分たちの攻撃結果から敵の位置を推測
 
