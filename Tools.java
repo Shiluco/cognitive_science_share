@@ -28,7 +28,6 @@ class Tools {
     private Random random = new Random();
     private String[] coordinates = { "B2", "B4", "D2", "D4" };
     public EnemyShip enemyShip;
-    public OurShip ourShip;
 
     private Ship ourShip01;
     private Ship ourShip02;
@@ -52,13 +51,14 @@ class Tools {
 
         lastOurAttackPoint = "HH";
         ourLastAttackResult = 0;
+        enemyLastAttackPoint = "HH";
 
         ourShip01 = new Ship(true, "A4", 3);
         ourShip02 = new Ship(true, "B1", 3);
         ourShip03 = new Ship(true, "D5", 3);
         ourShip04 = new Ship(true, "E2", 3);
 
-        ourShip = new OurShip(4, 12);
+
         enemyShip = new EnemyShip(4, 12);
 
     }
@@ -266,22 +266,80 @@ class Tools {
         }
     }
 
+
+    public void updateEnemyValueByEnemyAttack() {
+
+        String attackPoint = getEnemyLastAttackPoint();
+        int row = attackPoint.charAt(0) - 'A';
+        int col = Integer.parseInt(attackPoint.substring(1)) - 1;
+
+        switch (Tools.ourLastAttackResult) {
+            case 0:
+                enemyValues[row][col] = -1;
+                updateSurroundingCells(row, col, true, -1);
+
+                break;
+            case 1:
+                enemyValues[row][col] = -1;
+                updateSurroundingCells(row, col, false, 1);
+                break;
+            case 2:
+                enemyValues[row][col] = 9;
+                enemyShip.setEnemySumHp(enemyShip.getEnemySumHp() - 1);
+                break;
+            case 3:
+                System.out.println("撃破！");
+                enemyShip.setEnemySumHp(enemyShip.getEnemySumHp() - 1);
+                enemyShip.setEnemyCount(enemyShip.getEnemyCount() - 1);
+                break;
+            default:
+                // その他の値の場合の処理（必要に応じて）
+        }
+    }
+
+
     public void reflectEnemyAttackResult() {
-        System.err.println("reflect " + enemyLastAttackPoint);
+        String position = enemyLastAttackPoint;
+        int row = position.charAt(0) - 'A';
+        int col = Integer.parseInt(position.substring(1)) - 1;
+
         if (enemyLastAttackPoint.equals(ourShip01.getPosition())) {
             ourShip01.setHp(ourShip01.getHp() - 1);
-            
-            System.err.println("命中");
+            if (ourShip01.getHp() == 0) {
+                System.out.println("撃沈！");
+            }
+            else {
+                System.err.println("命中!");
+            }
+
         } else if (enemyLastAttackPoint.equals(ourShip02.getPosition())) {
             ourShip02.setHp(ourShip02.getHp() - 1);
-            System.err.println("命中");
+            
+            if (ourShip02.getHp() == 0) {
+                System.out.println("撃沈！");
+            }
+            else {
+                System.err.println("命中!");
+            }
         } else if (enemyLastAttackPoint.equals(ourShip03.getPosition())) {
             ourShip03.setHp(ourShip03.getHp() - 1);
-            System.err.println("命中");
+            if (ourShip03.getHp() == 0) {
+                System.out.println("撃沈！");
+            }
+            else {
+                System.err.println("命中!");
+            }
         } else if (enemyLastAttackPoint.equals(ourShip04.getPosition())) {
             ourShip04.setHp(ourShip04.getHp() - 1);
-            System.err.println("命中");
-        } else {
+            if (ourShip04.getHp() == 0) {
+                System.out.println("撃沈！");
+            } else {
+                System.err.println("命中!");
+            }
+        } else if(enableAttackPoints[row][col] == 1) {
+            System.err.println("波高し");
+        }
+        else {
             System.err.println("ハズレ");
         }
     }
@@ -332,13 +390,23 @@ class Tools {
         // いるマスをに2を入れる
 
         int[] index = ABCto123(ourShip01);
-        enableAttackPoints[index[0]][index[1]] = 2;
+        if(ourShip01.getHp() != 0) {
+            enableAttackPoints[index[0]][index[1]] = 2;
+        }
         index = ABCto123(ourShip02);
-        enableAttackPoints[index[0]][index[1]] = 2;
+        if(ourShip02.getHp() != 0) {
+            enableAttackPoints[index[0]][index[1]] = 2;
+        }
+        
         index = ABCto123(ourShip03);
-        enableAttackPoints[index[0]][index[1]] = 2;
+        if(ourShip03.getHp() != 0) {
+            enableAttackPoints[index[0]][index[1]] = 2;
+        }
+        
         index = ABCto123(ourShip04);
-        enableAttackPoints[index[0]][index[1]] = 2;
+        if(ourShip04.getHp() != 0) {
+            enableAttackPoints[index[0]][index[1]] = 2;
+        }
 
         // その周りを1にする
         for (int i = 0; i < enableAttackPoints.length; i++) {
@@ -379,6 +447,7 @@ class Tools {
         int col = Integer.parseInt(position.substring(1)) - 1;
         return new int[] { row, col }; // 行と列のインデックスを返す
     }
+
 
     public String maxEnableAttackValuePoint() {
         int maxIndexlistCount = 25; // 探索する座標の数
@@ -485,45 +554,6 @@ class Ship {
 
     public void setHp(int hp) {
         this.hp = hp;
-    }
-}
-
-class OurShip {
-    private int ourCount; // 味方の数
-    private int ourSumHp; // 味方の総HP
-
-    public OurShip(int ourCount, int ourSumHp) {
-        this.ourCount = ourCount;
-        this.ourSumHp = ourSumHp;
-    }
-
-    public int getOurCount() {
-        return ourCount;
-    }
-
-    public int getOurSumHp() {
-        return ourSumHp;
-    }
-
-    public void setOurCount(int ourCount) {
-        this.ourCount = ourCount;
-    }
-
-    public void setOurSumHp(int ourSumHp) {
-        this.ourSumHp = ourSumHp;
-    }
-
-    public void damageOur(int damage) {
-        this.ourSumHp -= damage;
-        if (this.ourSumHp < 0) {
-            this.ourSumHp = 0;
-        }
-    }
-
-    public void decreaseOurCount() {
-        if (this.ourCount > 0) {
-            this.ourCount--;
-        }
     }
 }
 
