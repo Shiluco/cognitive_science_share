@@ -6,16 +6,14 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        Tools tools = new Tools(); // Toolsのインスタンスを作成
+        Tools tools = Tools.getInstance(); // Toolsのインスタンスを作成
 
         Algorithm01 algorithm = Algorithm01.getInstance(); // Algorithm01のインスタンスを作成
 
         Scanner scanner = new Scanner(System.in);
 
-        String LastEnemyAttackPoint = "";
-        String LastEnemyMovePoint = "";
         int turnCount = 0;
-        Tools.endFarstAttack = false;
+        tools.endFarstAttack = false;
 
         System.out.println("先行:f 後攻:s");
         // 先行後攻の選択
@@ -38,38 +36,20 @@ public class Main {
 
         ENDGAME: while (true) {
             System.out.println("ターン" + (turnCount + 1));
+            System.out.println(tools.ourAttackTurn ? "我々の攻撃ターンです。" : "敵の攻撃ターンです。");
 
             if (Tools.ourAttackTurn) {
-                System.out.println("我々の攻撃ターンです。");
 
                 algorithm.Think();
                 tools.askOurAttackResult();
                 Tools.endFarstAttack = true;
             } else {
-                System.out.println("相手の攻撃ターンです。");
-                System.out.println("相手の行動を入力してください。");
-                CONFIRM: while (true) {
-                    String input = scanner.nextLine();
-                    if ("a".equals(input)) {
-                        System.out.println("敵はどこに攻撃してきましたか？");
-                        LastEnemyAttackPoint = scanner.nextLine();
 
-                        Tools.ourAttackTurn = false;
-                        break CONFIRM;
-
-                    } else if ("m".equals(input)) {
-                        System.out.println("敵はどの用に移動しましたか？");
-                        LastEnemyMovePoint = scanner.nextLine();
-                        Tools.ourAttackTurn = false;
-                        break CONFIRM;
-                    } else {
-                        System.out.println("無効な入力です。");
-                    }
-                }
-
+                tools.askEnemyAction();
+                algorithm.Think();
             }
 
-            Tools.ourAttackTurn = !Tools.ourAttackTurn;
+            tools.ourAttackTurn = !tools.ourAttackTurn;
             turnCount++;
 
         }

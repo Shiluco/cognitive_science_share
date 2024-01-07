@@ -6,6 +6,8 @@ import java.io.*;
 
 class Tools {
 
+    private static Tools instance;
+
     public static int ourLastAttackResult;
     public static int enemyLastAttackResult;
     public static String ourLastMovePosition;
@@ -25,14 +27,18 @@ class Tools {
 
     private Random random = new Random();
     private String[] coordinates = { "B2", "B4", "D2", "D4" };
-    EnemyShip enemyShip;
+    public EnemyShip enemyShip;
+    public OurShip ourShip;
 
     private Ship ourShip01;
     private Ship ourShip02;
     private Ship ourShip03;
     private Ship ourShip04;
 
-    Tools() {
+    private String enemyLastAttackPoint;
+    private String enemyLastMovePoint;
+
+    private Tools() {
         for (int i = 0; i < ourValues.length; i++) {
             for (int j = 0; j < ourValues[i].length; j++) {
                 ourValues[i][j] = 0;
@@ -40,6 +46,9 @@ class Tools {
                 enableAttackPoints[i][j] = 0;
             }
         }
+
+        enemyLastAttackPoint = "HH";
+        enemyLastMovePoint = "";
 
         lastOurAttackPoint = "HH";
         ourLastAttackResult = 0;
@@ -49,10 +58,40 @@ class Tools {
         ourShip03 = new Ship(true, "D5", 3);
         ourShip04 = new Ship(true, "E2", 3);
 
-        enemyShip = new EnemyShip(3, 12);
+        ourShip = new OurShip(4, 12);
+        enemyShip = new EnemyShip(4, 12);
 
     }
+
+    public static Tools getInstance() {
+        // インスタンスがまだ作成されていない場合にのみ作成
+        if (instance == null) {
+            instance = new Tools();
+        }
+        return instance;
+    }
+
     /// getterとsetter///
+
+
+    public String getEnemyLastAttackPoint() {
+        return enemyLastAttackPoint;
+    }
+
+    // enemyLastAttackPointのセッター
+    public void setEnemyLastAttackPoint(String enemyLastAttackPoint) {
+        this.enemyLastAttackPoint = enemyLastAttackPoint;
+    }
+
+    // enemyLastMovePointのゲッター
+    public String getEnemyLastMovePoint() {
+        return enemyLastMovePoint;
+    }
+
+    // enemyLastMovePointのセッター
+    public void setEnemyLastMovePoint(String enemyLastMovePoint) {
+        this.enemyLastMovePoint = enemyLastMovePoint;
+    }
 
     public void setOurValues(int[][] ourValues) {
         this.ourValues = ourValues;
@@ -175,18 +214,33 @@ class Tools {
         }
     }
 
+    public void askEnemyAction() {
+        System.out.println("相手の行動を入力してください。");
+        CONFIRM: while (true) {
+            String input = scanner.nextLine();
+            if ("a".equals(input)) {
+                System.out.println("敵はどこに攻撃してきましたか？");
+                setEnemyLastAttackPoint(scanner.nextLine());
+
+
+                break CONFIRM;
+
+            } else if ("m".equals(input)) {
+                System.out.println("敵はどの用に移動しましたか？");
+                setEnemyLastMovePoint(scanner.nextLine());
+
+                break CONFIRM;
+            } else {
+                System.out.println("無効な入力です。");
+            }
+        }
+    }
+
     public void updateEnemyValue() {
 
         String attackPoint = getLastOurAttackPoint();
         int row = attackPoint.charAt(0) - 'A';
         int col = Integer.parseInt(attackPoint.substring(1)) - 1;
-
-        // for (int i = 0; i < ourValues.length; i++) {
-        // for (int j = 0; j < ourValues[i].length; j++) {
-        // System.out.println(enemyValues[i][j] );
-
-        // }
-        // }
 
         switch (Tools.ourLastAttackResult) {
             case 0:
@@ -200,12 +254,35 @@ class Tools {
                 break;
             case 2:
                 enemyValues[row][col] = 9;
+                enemyShip.setEnemySumHp(enemyShip.getEnemySumHp() - 1);
                 break;
             case 3:
                 System.out.println("撃破！");
+                enemyShip.setEnemySumHp(enemyShip.getEnemySumHp() - 1);
+                enemyShip.setEnemyCount(enemyShip.getEnemyCount() - 1);
                 break;
             default:
                 // その他の値の場合の処理（必要に応じて）
+        }
+    }
+
+    public void reflectEnemyAttackResult() {
+        System.err.println("reflect " + enemyLastAttackPoint);
+        if (enemyLastAttackPoint.equals(ourShip01.getPosition())) {
+            ourShip01.setHp(ourShip01.getHp() - 1);
+            
+            System.err.println("命中");
+        } else if (enemyLastAttackPoint.equals(ourShip02.getPosition())) {
+            ourShip02.setHp(ourShip02.getHp() - 1);
+            System.err.println("命中");
+        } else if (enemyLastAttackPoint.equals(ourShip03.getPosition())) {
+            ourShip03.setHp(ourShip03.getHp() - 1);
+            System.err.println("命中");
+        } else if (enemyLastAttackPoint.equals(ourShip04.getPosition())) {
+            ourShip04.setHp(ourShip04.getHp() - 1);
+            System.err.println("命中");
+        } else {
+            System.err.println("ハズレ");
         }
     }
 
@@ -359,8 +436,17 @@ class Tools {
     }
 
     public void printEnemyStatus() {
-        System.out.println("敵の数: " + enemyShip.getEnemyCount());
-        System.out.println("敵の総HP: " + enemyShip.getEnemySumHp());
+        System.out.print("敵の数: " + enemyShip.getEnemyCount());
+        System.out.println(" HP: " + enemyShip.getEnemySumHp());
+    }
+
+    public void printOurStatus() {
+        System.out.print("我々の数: " + ourShip01.getHp());
+        System.out.print(" " + ourShip02.getHp());
+        System.out.print(" " + ourShip03.getHp());
+        System.out.print(" " + ourShip04.getHp());
+        System.out
+                .println(" 我々の総HP: " + (ourShip01.getHp() + ourShip02.getHp() + ourShip03.getHp() + ourShip04.getHp()));
     }
 }
 
@@ -399,6 +485,45 @@ class Ship {
 
     public void setHp(int hp) {
         this.hp = hp;
+    }
+}
+
+class OurShip {
+    private int ourCount; // 味方の数
+    private int ourSumHp; // 味方の総HP
+
+    public OurShip(int ourCount, int ourSumHp) {
+        this.ourCount = ourCount;
+        this.ourSumHp = ourSumHp;
+    }
+
+    public int getOurCount() {
+        return ourCount;
+    }
+
+    public int getOurSumHp() {
+        return ourSumHp;
+    }
+
+    public void setOurCount(int ourCount) {
+        this.ourCount = ourCount;
+    }
+
+    public void setOurSumHp(int ourSumHp) {
+        this.ourSumHp = ourSumHp;
+    }
+
+    public void damageOur(int damage) {
+        this.ourSumHp -= damage;
+        if (this.ourSumHp < 0) {
+            this.ourSumHp = 0;
+        }
+    }
+
+    public void decreaseOurCount() {
+        if (this.ourCount > 0) {
+            this.ourCount--;
+        }
     }
 }
 

@@ -1,12 +1,12 @@
 package my_code;
 
 class Algorithm01 {
-    
+
     private static Algorithm01 instance;
-    private Tools tools;
+    Tools tools = Tools.getInstance(); 
 
     private Algorithm01() {
-        tools = new Tools(); // Toolsのインスタンスを作成
+        
         // その他の初期化処理
     }
 
@@ -18,30 +18,31 @@ class Algorithm01 {
     }
 
     public void Think() {
+        if (tools.ourAttackTurn) {
 
+            if (Tools.endFarstAttack) {
+                tools.updateEnemyValue();
+            }
 
-        if (Tools.endFarstAttack) {
-            // 敵の攻撃結果から敵の位置を推測
+            tools.enemyValuesViwe();
+            tools.shipView();
+            tools.setEnableAttackPoints();
+            tools.printOurStatus();
+            tools.printEnemyStatus();
 
-            tools.updateEnemyValue();
-        }
+            // 自分たちの攻撃結果から敵の位置を推測
 
-        tools.enemyValuesViwe();
-        tools.shipView();
-        tools.setEnableAttackPoints();
-        tools.printEnemyStatus();
+            // 全部0ならB4に攻撃
+            if (tools.IsAllZero()) {
+                tools.randomSayAttackPoint();
+            } else {
+                
+                tools.sayAttackPoint(tools.maxEnableAttackValuePoint());
+            }
 
-        // 自分たちの攻撃結果から敵の位置を推測
-
-        // 全部0ならB4に攻撃
-        if (tools.IsAllZero()) {
-            tools.randomSayAttackPoint();
         }
         else {
-            
-            tools.sayAttackPoint(tools.maxEnableAttackValuePoint());
+            tools.reflectEnemyAttackResult();
         }
-
-
     }
 }
