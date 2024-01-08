@@ -16,6 +16,7 @@ class Tools {
     private int[][] ourValue;
     public static boolean ourAttackTurn;
     public static boolean endFarstAttack;
+    public static boolean IsEnemyAttack;
 
     int[][] ourValues = new int[5][5];
     int[][] enemyValues = new int[5][5];
@@ -52,15 +53,15 @@ class Tools {
         lastOurAttackPoint = "HH";
         ourLastAttackResult = 0;
         enemyLastAttackPoint = "HH";
+        enemyLastAttackResult = 0;
 
         ourShip01 = new Ship(true, "A4", 3);
         ourShip02 = new Ship(true, "B1", 3);
         ourShip03 = new Ship(true, "D5", 3);
         ourShip04 = new Ship(true, "E2", 3);
 
-
         enemyShip = new EnemyShip(4, 12);
-
+        IsEnemyAttack = true;
     }
 
     public static Tools getInstance() {
@@ -72,7 +73,6 @@ class Tools {
     }
 
     /// getterとsetter///
-
 
     public String getEnemyLastAttackPoint() {
         return enemyLastAttackPoint;
@@ -138,7 +138,9 @@ class Tools {
 
     public void enemyValuesViwe() {
         System.out.println("敵のいる可能性の値");
+        System.out.println("  1|2|3|4|5");
         for (int i = 0; i < enemyValues.length; i++) {
+            System.out.print((char) ('A' + i) + "|");
             for (int j = 0; j < enemyValues[i].length; j++) {
                 System.out.print(enemyValues[i][j] + " "); // 要素をスペース区切りで出力
             }
@@ -160,7 +162,9 @@ class Tools {
         placeShipOnGrid(ourShip04, grid);
 
         System.out.println("我々の船の位置");
+        System.out.println("  1|2|3|4|5");
         for (int i = 0; i < grid.length; i++) {
+            System.out.print((char) ('A' + i) + "|");
             for (int j = 0; j < grid[i].length; j++) {
                 System.out.print(grid[i][j]);
                 System.out.print(" ");
@@ -188,22 +192,26 @@ class Tools {
         CONFIRM: while (true) {
             String input = scanner.nextLine();
             if ("0".equals(input)) {
+
                 System.out.println("ハズレ！");
 
                 ourLastAttackResult = 0;
                 break CONFIRM;
 
             } else if ("1".equals(input)) {
+                System.out.print("我々の相手への攻撃結果:");
                 System.out.println("波高し！");
 
                 ourLastAttackResult = 1;
                 break CONFIRM;
             } else if ("2".equals(input)) {
+                System.out.print("我々の相手への攻撃結果:");
                 System.out.println("命中！");
 
                 ourLastAttackResult = 2;
                 break CONFIRM;
             } else if ("3".equals(input)) {
+                System.out.print("我々の相手への攻撃結果:");
                 System.out.println("撃沈！");
 
                 ourLastAttackResult = 3;
@@ -215,18 +223,20 @@ class Tools {
     }
 
     public void askEnemyAction() {
-        System.out.println("相手の行動を入力してください。");
+        System.out.println("相手の行動を入力してください。a:攻撃 m:移動");
         CONFIRM: while (true) {
+
             String input = scanner.nextLine();
             if ("a".equals(input)) {
-                System.out.println("敵はどこに攻撃してきましたか？");
+                IsEnemyAttack = true;
+                System.out.println("敵はどこに攻撃してきましたか？例:A1,B2,C3,D4,E5");
                 setEnemyLastAttackPoint(scanner.nextLine());
-
 
                 break CONFIRM;
 
             } else if ("m".equals(input)) {
-                System.out.println("敵はどの用に移動しましたか？");
+                IsEnemyAttack = false;
+                System.out.println("敵はどの用に移動しましたか？例:n1,s2,w1,e2");
                 setEnemyLastMovePoint(scanner.nextLine());
 
                 break CONFIRM;
@@ -266,37 +276,35 @@ class Tools {
         }
     }
 
+    // public void updateEnemyValueByEnemyAttack() {
 
-    public void updateEnemyValueByEnemyAttack() {
+    // String attackPoint = getEnemyLastAttackPoint();
+    // int row = attackPoint.charAt(0) - 'A';
+    // int col = Integer.parseInt(attackPoint.substring(1)) - 1;
 
-        String attackPoint = getEnemyLastAttackPoint();
-        int row = attackPoint.charAt(0) - 'A';
-        int col = Integer.parseInt(attackPoint.substring(1)) - 1;
+    // switch (Tools.ourLastAttackResult) {
+    // case 0:
+    // enemyValues[row][col] = -1;
+    // updateSurroundingCells(row, col, true, -1);
 
-        switch (Tools.ourLastAttackResult) {
-            case 0:
-                enemyValues[row][col] = -1;
-                updateSurroundingCells(row, col, true, -1);
-
-                break;
-            case 1:
-                enemyValues[row][col] = -1;
-                updateSurroundingCells(row, col, false, 1);
-                break;
-            case 2:
-                enemyValues[row][col] = 9;
-                enemyShip.setEnemySumHp(enemyShip.getEnemySumHp() - 1);
-                break;
-            case 3:
-                System.out.println("撃破！");
-                enemyShip.setEnemySumHp(enemyShip.getEnemySumHp() - 1);
-                enemyShip.setEnemyCount(enemyShip.getEnemyCount() - 1);
-                break;
-            default:
-                // その他の値の場合の処理（必要に応じて）
-        }
-    }
-
+    // break;
+    // case 1:
+    // enemyValues[row][col] = -1;
+    // updateSurroundingCells(row, col, false, 1);
+    // break;
+    // case 2:
+    // enemyValues[row][col] = 9;
+    // enemyShip.setEnemySumHp(enemyShip.getEnemySumHp() - 1);
+    // break;
+    // case 3:
+    // System.out.println("撃破！");
+    // enemyShip.setEnemySumHp(enemyShip.getEnemySumHp() - 1);
+    // enemyShip.setEnemyCount(enemyShip.getEnemyCount() - 1);
+    // break;
+    // default:
+    // // その他の値の場合の処理（必要に応じて）
+    // }
+    // }
 
     public void reflectEnemyAttackResult() {
         String position = enemyLastAttackPoint;
@@ -306,42 +314,108 @@ class Tools {
         if (enemyLastAttackPoint.equals(ourShip01.getPosition())) {
             ourShip01.setHp(ourShip01.getHp() - 1);
             if (ourShip01.getHp() == 0) {
+                System.out.println("");
+                System.out.println("----");
                 System.out.println("撃沈！");
-            }
-            else {
-                System.err.println("命中!");
-            }
+                System.out.println("----");
+                System.out.println("");
+                enemyLastAttackResult = 3;
+                enemyValues[row][col] = -1;
+                updateSurroundingCells(row, col, false, 1);
+            } else {
+                System.out.println("");
+                System.out.println("----");
+                System.out.println("命中！");
+                System.out.println("----");
+                System.out.println("");
+                enemyLastAttackResult = 2;
+                enemyValues[row][col] = -1;
+                updateSurroundingCells(row, col, false, 1);
 
+            }
         } else if (enemyLastAttackPoint.equals(ourShip02.getPosition())) {
             ourShip02.setHp(ourShip02.getHp() - 1);
-            
+
             if (ourShip02.getHp() == 0) {
+                System.out.println("");
+                System.out.println("----");
                 System.out.println("撃沈！");
-            }
-            else {
-                System.err.println("命中!");
+                System.out.println("----");
+                System.out.println("");
+                enemyLastAttackResult = 3;
+                enemyValues[row][col] = -1;
+                updateSurroundingCells(row, col, false, 1);
+            } else {
+                System.out.println("");
+                System.out.println("----");
+                System.out.println("命中！");
+                System.out.println("----");
+                System.out.println("");
+                enemyLastAttackResult = 2;
+                enemyValues[row][col] = -1;
+                updateSurroundingCells(row, col, false, 1);
             }
         } else if (enemyLastAttackPoint.equals(ourShip03.getPosition())) {
             ourShip03.setHp(ourShip03.getHp() - 1);
             if (ourShip03.getHp() == 0) {
+                System.out.println("");
+                System.out.println("----");
                 System.out.println("撃沈！");
-            }
-            else {
-                System.err.println("命中!");
+                System.out.println("----");
+                System.out.println("");
+                enemyLastAttackResult = 3;
+                enemyValues[row][col] = -1;
+                updateSurroundingCells(row, col, false, 1);
+            } else {
+                System.out.println("");
+                System.out.println("----");
+                System.out.println("命中！");
+                System.out.println("----");
+                System.out.println("");
+                enemyLastAttackResult = 2;
+                enemyValues[row][col] = -1;
+                updateSurroundingCells(row, col, false, 1);
             }
         } else if (enemyLastAttackPoint.equals(ourShip04.getPosition())) {
             ourShip04.setHp(ourShip04.getHp() - 1);
             if (ourShip04.getHp() == 0) {
+                System.out.println("");
+                System.out.println("----");
                 System.out.println("撃沈！");
+                System.out.println("----");
+                System.out.println("");
+                enemyLastAttackResult = 3;
+                enemyValues[row][col] = -1;
+                updateSurroundingCells(row, col, false, 1);
             } else {
-                System.err.println("命中!");
+                System.out.println("");
+                System.out.println("----");
+                System.out.println("命中！");
+                System.out.println("----");
+                System.out.println("");
+                enemyLastAttackResult = 2;
+                enemyValues[row][col] = -1;
+                updateSurroundingCells(row, col, false, 1);
             }
-        } else if(enableAttackPoints[row][col] == 1) {
-            System.err.println("波高し");
+        } else if (enableAttackPoints[row][col] == 1) {
+            System.out.println("");
+            System.out.println("-----");
+            System.out.println("波高し！");
+            System.out.println("-----");
+            System.out.println("");
+            enemyLastAttackResult = 1;
+            // 評価がむかしいのでスキップ
+        } else {
+            System.out.println("");
+            System.out.println("-----");
+            System.out.println("ハズレ！");
+            System.out.println("-----");
+            System.out.println("");
+            enemyValues[row][col] = -1;
+            updateSurroundingCells(row, col, false, 1);
+            enemyLastAttackResult = 0;
         }
-        else {
-            System.err.println("ハズレ");
-        }
+
     }
 
     private void updateSurroundingCells(int row, int col, boolean IsSetNo, int gain) {
@@ -390,21 +464,21 @@ class Tools {
         // いるマスをに2を入れる
 
         int[] index = ABCto123(ourShip01);
-        if(ourShip01.getHp() != 0) {
+        if (ourShip01.getHp() != 0) {
             enableAttackPoints[index[0]][index[1]] = 2;
         }
         index = ABCto123(ourShip02);
-        if(ourShip02.getHp() != 0) {
+        if (ourShip02.getHp() != 0) {
             enableAttackPoints[index[0]][index[1]] = 2;
         }
-        
+
         index = ABCto123(ourShip03);
-        if(ourShip03.getHp() != 0) {
+        if (ourShip03.getHp() != 0) {
             enableAttackPoints[index[0]][index[1]] = 2;
         }
-        
+
         index = ABCto123(ourShip04);
-        if(ourShip04.getHp() != 0) {
+        if (ourShip04.getHp() != 0) {
             enableAttackPoints[index[0]][index[1]] = 2;
         }
 
@@ -428,7 +502,9 @@ class Tools {
         enableAttackPoints[index[0]][index[1]] = 0;
         // 表示する
         System.err.println("攻撃可能なマス");
+        System.out.println("  1|2|3|4|5");
         for (int i = 0; i < enableAttackPoints.length; i++) {
+            System.out.print((char) ('A' + i) + "|");
             for (int j = 0; j < enableAttackPoints[i].length; j++) {
                 System.out.print(enableAttackPoints[i][j] + " ");
             }
@@ -447,7 +523,6 @@ class Tools {
         int col = Integer.parseInt(position.substring(1)) - 1;
         return new int[] { row, col }; // 行と列のインデックスを返す
     }
-
 
     public String maxEnableAttackValuePoint() {
         int maxIndexlistCount = 25; // 探索する座標の数
@@ -517,6 +592,73 @@ class Tools {
         System.out
                 .println(" 我々の総HP: " + (ourShip01.getHp() + ourShip02.getHp() + ourShip03.getHp() + ourShip04.getHp()));
     }
+
+    public void Randomescape() {
+
+        // 船のリスト
+        Ship[] ships = { ourShip01, ourShip02, ourShip03, ourShip04 };
+
+        Ship selectedShip;
+        int attempts = 0; // 無限ループを避けるための試行回数カウンタ
+
+        do {
+            // ランダムに船を選択
+            selectedShip = ships[random.nextInt(ships.length)];
+            attempts++;
+
+            // すべての船がhpが0の場合、ループを抜ける
+            if (attempts > ships.length) {
+                return;
+            }
+        } while (selectedShip.getHp() == 0); // hpが0の船を除外
+        // 選択された船の位置を取得
+        String position = selectedShip.getPosition();
+        int row = position.charAt(0) - 'A';
+        int col = Integer.parseInt(position.substring(1)) - 1;
+
+        int newRow, newCol;
+
+        // 新しい座標を計算するまでループ
+        do {
+            // ランダムに選択する要素（行または列）
+            boolean isRow = random.nextBoolean();
+
+            // ランダムに -2 から 2 の値を足す
+            int delta = random.nextInt(5) - 2;
+
+            if (isRow) {
+                newRow = row + delta;
+                newCol = col;
+            } else {
+                newRow = row;
+                newCol = col + delta;
+            }
+
+            // 座標を範囲内に収める
+            newRow = Math.min(Math.max(newRow, 0), 4);
+            newCol = Math.min(Math.max(newCol, 0), 4);
+        } while ((newRow == row && newCol == col) || enableAttackPoints[newRow][newCol] == 2);
+
+        // 新しい位置を設定
+        char newRowChar = (char) ('A' + newRow);
+        String newPosition = newRowChar + Integer.toString(newCol + 1);
+        selectedShip.setPosition(newPosition);
+
+        // 移動した方向と距離を計算
+        int rowDelta = newRow - row;
+        int colDelta = newCol - col;
+
+        // 移動した方向と距離を出力
+        String moveDirection = "";
+        if (rowDelta != 0) {
+            moveDirection = (rowDelta > 0 ? "下に" : "上に") + Math.abs(rowDelta) + "マス";
+        } else if (colDelta != 0) {
+            moveDirection = (colDelta > 0 ? "右に" : "左に") + Math.abs(colDelta) + "マス";
+        }
+
+        System.out.println("移動した方向と距離: " + moveDirection);
+    }
+
 }
 
 class Ship {

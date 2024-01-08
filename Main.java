@@ -35,13 +35,16 @@ public class Main {
         }
 
         ENDGAME: while (true) {
+            System.out.println("");
+            System.out.println("----------------------------------------");
             System.out.println("ターン" + (turnCount + 1));
             System.out.println(tools.ourAttackTurn ? "我々の攻撃ターンです。" : "敵の攻撃ターンです。");
 
             if (Tools.ourAttackTurn) {
 
                 algorithm.Think();
-                tools.askOurAttackResult();
+
+                
                 Tools.endFarstAttack = true;
             } else {
 
